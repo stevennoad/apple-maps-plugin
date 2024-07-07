@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		const landmarkAnnotationCallout = {
 				calloutElementForAnnotation: function(annotation) {
+						console.log('Creating callout element for annotation:', annotation);
 						return createCalloutElement(annotation.landmark);
 				},
 				calloutAnchorOffsetForAnnotation: function() {
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		};
 
 		function createCalloutElement(landmark) {
+				console.log('Creating callout element for landmark:', landmark);
 				const div = document.createElement("div");
 				div.className = "landmark";
 
@@ -54,12 +56,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		function createAnnotation(landmark) {
-				return new mapkit.MarkerAnnotation(landmark.coordinate, {
+				console.log('Creating annotation for landmark:', landmark);
+				const annotation = new mapkit.MarkerAnnotation(landmark.coordinate, {
 						callout: landmarkAnnotationCallout,
 						color: "#1d1d1d4",
 						title: landmark.title,
 						glyphText: appleMapsSettings.glyph
 				});
+				annotation.landmark = landmark;
+				return annotation;
 		}
 
 		function initializeMap(mapElementId, landmarks) {
@@ -69,12 +74,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const map = new mapkit.Map(mapElementId, {
 						colorScheme: mapkit.Map.ColorSchemes.Light,
+						showsUserLocationControl: true,
+						isZoomEnabled: true,
+						isScrollEnabled: true,
+						isRotationEnabled: true
 				});
 				console.log('Map object created for element ID: ' + mapElementId);
 
 				map.showItems(annotations);
 				console.log('Annotations added to map for element ID: ' + mapElementId);
 		}
+
+		function getLandmarksFromJson(jsonString) {
+				try {
+						const jsonData = JSON.parse(jsonString);
+						return jsonData.locations.map(location => ({
+								coordinate: new mapkit.Coordinate(parseFloat(location.lat), parseFloat(location.lng)),
+								title: location.title,
+								address: location.address,
+								phone: location.phone,
+								hours: location.hours,
+								url: location.url
+						}));
+				} catch (error) {
+						console.error('Error parsing JSON:', error);
+						return [];
+				}
+		}
+
+		const mapContainers = document.querySelectorAll('.apple-map-container');
+		console.log('Map containers found:', mapContainers);
+
+		mapContainers.forEach(container => {
+				const mapElementId = container.id;
+				const jsonLandmarks = container.getAttribute('data-landmarks');
+
+				if (jsonLandmarks) {
+						const landmarks = getLandmarksFromJson(jsonLandmarks);
+						console.log('Landmarks for ' + mapElementId + ':', landmarks);
+						initializeMap(mapElementId, landmarks);
+				} else {
+						const landmarks = [getLandmarkFromContainer(container)];
+						console.log('Landmarks for ' + mapElementId + ':', landmarks);
+						initializeMap(mapElementId, landmarks);
+				}
+		});
 
 		function getLandmarkFromContainer(container) {
 				return {
@@ -89,14 +133,4 @@ document.addEventListener('DOMContentLoaded', function () {
 						url: container.getAttribute('data-url')
 				};
 		}
-
-		const mapContainers = document.querySelectorAll('.apple-map-container');
-		console.log('Map containers found:', mapContainers);
-
-		mapContainers.forEach(container => {
-				const mapElementId = container.id;
-				const landmarks = [getLandmarkFromContainer(container)];
-				console.log('Landmarks for ' + mapElementId + ':', landmarks);
-				initializeMap(mapElementId, landmarks);
-		});
 });

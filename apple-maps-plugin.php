@@ -2,7 +2,7 @@
 /*
 Plugin Name: Apple Maps Plugin
 Description: A plugin to add Apple Maps with multiple locations.
-Version: 1.3.1
+Version: 1.4.0
 Author: Steve Noad
 */
 
@@ -73,6 +73,34 @@ function apple_maps_shortcode($atts) {
 		return ob_get_clean();
 }
 add_shortcode('apple_map', 'apple_maps_shortcode');
+
+function apple_maps_multiple_shortcode($atts, $content = null) {
+		static $map_counter = 0;
+		$map_counter++;
+
+		$map_id = 'apple-map-' . $map_counter;
+		$locations = json_decode($content, true);
+
+		if (json_last_error() !== JSON_ERROR_NONE) {
+				return '<p>Invalid JSON format.</p>';
+		}
+
+		// Debug log
+		if (defined('WP_DEBUG') && WP_DEBUG) {
+				error_log('Apple Maps shortcode rendered with map ID: ' . $map_id);
+		}
+
+		ob_start();
+		?>
+		<div id="<?php echo esc_attr($map_id); ?>" class="apple-map-container"
+				 data-landmarks='<?php echo esc_attr(json_encode($locations, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)); ?>'>
+		</div>
+		<?php
+		return ob_get_clean();
+}
+add_shortcode('apple_map_multiple', 'apple_maps_multiple_shortcode');
+
+
 
 // Admin menu and settings page
 add_action('admin_menu', 'apple_map_add_admin_menu');
