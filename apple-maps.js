@@ -71,8 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
       isZoomEnabled: settings.isZoomEnabled ?? true,
       isScrollEnabled: settings.isScrollEnabled ?? true,
       isRotationEnabled: settings.isRotationEnabled ?? true,
-      cameraDistance: settings.cameraDistance
     };
+    
+    // Set camera distance if provided in settings
+    if (settings.cameraDistance !== undefined) {
+      mapOptions.cameraDistance = settings.cameraDistance;
+    }
 
     const map = new mapkit.Map(mapElementId, mapOptions);
     console.log('Map object created for element ID: ' + mapElementId);
