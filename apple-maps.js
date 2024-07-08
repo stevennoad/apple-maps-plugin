@@ -73,11 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
       isRotationEnabled: settings.isRotationEnabled ?? true,
     };
     
-    // Set camera distance if provided in settings
-    if (settings.cameraDistance !== undefined) {
-      mapOptions.cameraDistance = settings.cameraDistance;
-    }
-
     const map = new mapkit.Map(mapElementId, mapOptions);
     console.log('Map object created for element ID: ' + mapElementId);
 
@@ -85,8 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Annotations added to map for element ID: ' + mapElementId);
 
     if (settings.center?.latitude !== undefined && settings.center?.longitude !== undefined) {
-      const centerCoordinate = new mapkit.Coordinate(settings.center.latitude, settings.center.longitude);
-      map.setCenterAnimated(centerCoordinate);
+      map.center = new mapkit.Coordinate(settings.center.latitude, settings.center.longitude);
+    }
+    
+    // Set camera distance if provided in settings
+    if (settings.cameraDistance !== undefined) {
+      map.cameraDistance = settings.cameraDistance;;
     }
   };
 
