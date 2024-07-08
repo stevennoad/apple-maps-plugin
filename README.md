@@ -19,6 +19,7 @@ The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPr
 
 1. **Download the Plugin:**
    - Download the plugin zip file from the [GitHub repository](https://github.com/stevennoad/apple-maps-plugin).
+   - Rename the zip file to `apple-maps-plugin`.
 
 2. **Upload the Plugin:**
    - Navigate to `Plugins > Add New` in your WordPress admin dashboard.
