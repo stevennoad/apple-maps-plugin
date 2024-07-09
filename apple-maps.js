@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set camera distance if provided in settings
     if (settings.cameraDistance !== undefined) {
-      map.cameraDistance = settings.cameraDistance;;
+      map.cameraDistance = settings.cameraDistance;
     }
   };
 

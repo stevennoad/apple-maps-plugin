@@ -4,14 +4,15 @@ A WordPress plugin to add Apple Maps with multiple locations using shortcodes.
 
 ## Description
 
-The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPress site. You can add multiple locations with custom markers and information. This plugin also provides an admin settings page to configure default map settings, such as latitude, longitude, title, address, phone, and URL.
+The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPress site. You can add multiple locations with custom markers and information.
 
 ## Features
 
 - Embed Apple Maps in posts, pages, or widgets using a shortcode.
-- Configure default map settings via the admin settings page.
+- Configure map via the admin settings page.
 - Customise map location details such as latitude, longitude, title, address, phone, and URL.
-- Supports multiple maps on a single page.
+- Supports multiple locations on a single map.
+- Use PlaceIDs to display the location pin and details card
 
 ## Installation
 
@@ -19,7 +20,7 @@ The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPr
 
 1. **Download the Plugin:**
    - Download the plugin zip file from the [GitHub repository](https://github.com/stevennoad/apple-maps-plugin).
-   - Rename the zip file to `apple-maps-plugin`.
+   - Rename the zip file to `apple-maps`.
 
 2. **Upload the Plugin:**
    - Navigate to `Plugins > Add New` in your WordPress admin dashboard.
@@ -42,11 +43,15 @@ The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPr
 
 ### Shortcode Usage
 
-Use the `[apple_map]` shortcode to embed a map in your posts or pages.
+Use the `[apple_map]` shortcode to customise your location data.
 
-#### Example Single Location Shortcode
+Use the `[apple_map_places]` shortcode to use a locations place ID.
+
+#### Examples
+Use the `[apple_map]` shortcode to display locations based on JSON data you provide. The plugin will iterate through all the locations and display pins accordingly.
 
 ```html
+<!-- Single location -->
 [apple_map]
 {
   "locations": [
@@ -61,12 +66,9 @@ Use the `[apple_map]` shortcode to embed a map in your posts or pages.
   ]
 }
 [/apple_map]
-```
 
-#### Example Multiple Locations Shortcode
 
-Use the `[apple_map]` shortcode to embed a map with multiple locations. The locations should be provided in JSON format within the shortcode.
-```html
+<!-- Multiple locations -->
 [apple_map]
 {
   "locations": [
@@ -89,10 +91,25 @@ Use the `[apple_map]` shortcode to embed a map with multiple locations. The loca
   ]
 }
 [/apple_map]
+
+
+<!-- Using place Ids -->
+[apple_map_places]
+{
+  "locations": [
+    {
+      "placeId": "I63802885C8189B2B"
+    },
+    {
+      "placeId": "I92DB6EB7006183F4"
+    }
+  ]
+}
+[/apple_map_places]
 ```
 
-#### Custom Settings
-You can pass additional settings to the map canvas by including a settings array in the JSON
+## Custom Settings
+You can customise the map further by including a `settings` object within your shortcode. Below is the current list of available settings:
 
 ```html
 "settings": {
