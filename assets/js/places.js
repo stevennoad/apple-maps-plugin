@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error parsing locations data:', error);
       return;
     }
-    
+
     // Settings for the map
     const settings = appleMapsSettings.settings;
-    
+
     const getColorScheme = colorScheme => {
       switch (colorScheme) {
         case 'light':
@@ -36,16 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
           return mapkit.Map.ColorSchemes.Light;
       }
     };
-    
+
     const mapOptions = {
       colorScheme: getColorScheme(settings.colorScheme),
       isZoomEnabled: settings.isZoomEnabled ?? true,
       isScrollEnabled: settings.isScrollEnabled ?? true,
       isRotationEnabled: settings.isRotationEnabled ?? true,
     };
-    
+
     const map = new mapkit.Map(mapContainer, mapOptions);
-    
+
     const annotations = [];
     let pendingLookups = locations.length;
 
@@ -65,17 +65,36 @@ document.addEventListener('DOMContentLoaded', () => {
           map.addAnnotation(annotation);
           annotations.push(annotation);
 
-          const accessory = new mapkit.PlaceSelectionAccessory();
+					const getPlaceDetailsStyle = style => {
+						switch (style) {
+							case 'automatic':
+								return mapkit.PlaceSelectionAccessory.Styles.Automatic
+							case 'callout':
+								return mapkit.PlaceSelectionAccessory.Styles.Callout
+							case 'full_callout':
+								return mapkit.PlaceSelectionAccessory.Styles.FullCallout
+							case 'compact_callout':
+								return mapkit.PlaceSelectionAccessory.Styles.CompactCallout
+							case 'open_in_maps':
+								return mapkit.PlaceSelectionAccessory.Styles.OpenInMaps
+							default:
+								return mapkit.PlaceSelectionAccessory.Styles.Automatic
+						}
+					};
+
+          const accessory = new mapkit.PlaceSelectionAccessory({
+						style: getPlaceDetailsStyle(settings.style),
+					});
           annotation.selectionAccessory = accessory;
         }
 
         if (pendingLookups === 0) {
           map.showItems(annotations);
-          
+
           if (settings.center?.latitude !== undefined && settings.center?.longitude !== undefined) {
             map.center = new mapkit.Coordinate(settings.center.latitude, settings.center.longitude);
           }
-          
+
           // Set camera distance if provided in settings
           if (settings.cameraDistance !== undefined) {
             map.cameraDistance = settings.cameraDistance;
