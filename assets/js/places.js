@@ -108,6 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					if (settings.cameraDistance !== undefined) {
 						map.cameraDistance = settings.cameraDistance;
 					}
+
+					mapContainer.style.height = `${settings.mapHeight || 500}px`;
 				}
 			});
 		});

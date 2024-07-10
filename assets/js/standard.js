@@ -80,6 +80,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		map.showItems(annotations);
 		console.log('Annotations added to map for element ID: ' + mapElementId);
 
+		if (settings.mapHeight) {
+			const mapContainer = document.getElementById(mapElementId);
+			if (mapContainer) {
+				mapContainer.style.height = `${settings.mapHeight}px`;
+			}
+		} else {
+			const mapContainer = document.getElementById(mapElementId);
+			if (mapContainer) {
+				mapContainer.style.height = `500px`;
+			}
+		}
+
 		if (settings.cameraBoundary?.latitude !== undefined && settings.cameraBoundary?.longitude !== undefined && settings.cameraBoundary?.spanLatitude !== undefined && settings.cameraBoundary?.spanLongitude !== undefined) {
 			const cameraBoundary = new mapkit.CoordinateRegion(
 				new mapkit.Coordinate(settings.cameraBoundary.latitude, settings.cameraBoundary.longitude),

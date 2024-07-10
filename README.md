@@ -19,27 +19,27 @@ The Apple Maps Plugin allows you to easily integrate Apple Maps into your WordPr
 ### Manual Installation
 
 1. **Download the Plugin:**
-   - Download the plugin zip file from the [GitHub repository](https://github.com/stevennoad/apple-maps-plugin).
-   - Rename the zip file to `apple-maps`.
+  - Download the plugin zip file from the [GitHub repository](https://github.com/stevennoad/apple-maps-plugin).
+  - Rename the zip file to `apple-maps`.
 
 2. **Upload the Plugin:**
-   - Navigate to `Plugins > Add New` in your WordPress admin dashboard.
-   - Click on the `Upload Plugin` button.
-   - Choose the downloaded zip file and click `Install Now`.
+  - Navigate to `Plugins > Add New` in your WordPress admin dashboard.
+  - Click on the `Upload Plugin` button.
+  - Choose the downloaded zip file and click `Install Now`.
 
 3. **Activate the Plugin:**
-   - After the plugin is installed, click on `Activate Plugin`.
+  - After the plugin is installed, click on `Activate Plugin`.
 
 ## Configuration
 
 ### API Key
 
 1. **Get Your MapKit JS Token:**
-   - Obtain your Apple MapKit JS token from the Apple Developer portal.
+  - Obtain your Apple MapKit JS token from the Apple Developer portal.
 
 2. **Enter the Token in Plugin Settings:**
-   - Navigate to `Settings > Apple Map` in your WordPress admin dashboard.
-   - Enter your MapKit JS token in the designated field.
+  - Navigate to `Settings > Apple Map` in your WordPress admin dashboard.
+  - Enter your MapKit JS token in the designated field.
 
 ### Shortcode Usage
 
@@ -113,27 +113,28 @@ You can customise the map further by including a `settings` object within your s
 
 ```html
 "settings": {
-	 "colorScheme": "light",
-	 "cameraDistance": 1000,
-	 "isZoomEnabled": true,
-	 "isScrollEnabled": true,
-	 "isRotationEnabled": true,
-	 "style": "compact_callout",
-	 "center": {
-		 "latitude": 37.3318,
-		 "longitude": -122.0312
-	 },
-	 "cameraZoomRange": {
-			"min": 5000,
-			"max": 10000
-		},
-	 "cameraBoundary": {
-		 "latitude": 37.3349,
-		 "longitude": -122.0090,
-		 "spanLatitude": 0.05,
-		 "spanLongitude": 0.05
-	 }
- }
+	"mapHeight": 500,
+	"colorScheme": "light",
+	"cameraDistance": 1000,
+	"isZoomEnabled": true,
+	"isScrollEnabled": true,
+	"isRotationEnabled": true,
+	"style": "compact_callout",
+	"center": {
+		"latitude": 37.3318,
+		"longitude": -122.0312
+	},
+	"cameraZoomRange": {
+		"min": 5000,
+		"max": 10000
+	},
+	"cameraBoundary": {
+		"latitude": 37.3349,
+		"longitude": -122.0090,
+		"spanLatitude": 0.05,
+		"spanLongitude": 0.05
+	}
+}
 ```
 
 #### Full example of multiple locations with custom setting
@@ -159,11 +160,11 @@ You can customise the map further by including a `settings` object within your s
     }
   ],
   "settings": {
-     "colorScheme": "dark",
-     "isZoomEnabled": true,
-     "isScrollEnabled": true,
-     "isRotationEnabled": true
-   }
+    "colorScheme": "dark",
+    "isZoomEnabled": true,
+    "isScrollEnabled": true,
+  	"isRotationEnabled": true
+  }
 }
 [/apple_map]
 ```
