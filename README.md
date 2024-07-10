@@ -113,15 +113,26 @@ You can customise the map further by including a `settings` object within your s
 
 ```html
 "settings": {
-   "colorScheme": "light",
-   "cameraDistance": 1000,
-   "isZoomEnabled": true,
-   "isScrollEnabled": true,
-   "isRotationEnabled": true,
-   "center": {
-     "latitude": 37.3318,
-     "longitude": -122.0312
-   }
+	 "colorScheme": "light",
+	 "cameraDistance": 1000,
+	 "isZoomEnabled": true,
+	 "isScrollEnabled": true,
+	 "isRotationEnabled": true,
+	 "style": "compact_callout",
+	 "center": {
+		 "latitude": 37.3318,
+		 "longitude": -122.0312
+	 },
+	 "cameraZoomRange": {
+			"min": 5000,
+			"max": 10000
+		},
+	 "cameraBoundary": {
+		 "latitude": 37.3349,
+		 "longitude": -122.0090,
+		 "spanLatitude": 0.05,
+		 "spanLongitude": 0.05
+	 }
  }
 ```
 
