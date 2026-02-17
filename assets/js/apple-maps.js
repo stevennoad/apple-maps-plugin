@@ -1,15 +1,37 @@
-function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, mapKitToken, cameraDistance, colorScheme = "adaptive", mapSettings = {}, cameraZoomRange = undefined, cameraBoundary = undefined, pinColor = '#ff0000', center = undefined) {
+function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, mapKitToken, cameraDistance, colorScheme = "adaptive", mapSettings = {}, cameraZoomRange = undefined, cameraBoundary = undefined, pinColor = '#ff0000', center = undefined, mapkitRetryCount = 0) {
 	if (!mapKitToken || !mapLocations || mapLocations.length === 0) {
 		console.error("Missing MapKit token or map locations.");
 		return;
 	}
 
 	let annotations = [];
+	const is_safe_http_url = (url) => {
+		if (!url || typeof url !== "string") {
+			return false;
+		}
+
+		const trimmed_url = url.trim();
+		if (!/^https?:\/\//i.test(trimmed_url)) {
+			return false;
+		}
+
+		try {
+			const parsed_url = new URL(trimmed_url);
+			return parsed_url.protocol === "http:" || parsed_url.protocol === "https:";
+		} catch (error) {
+			return false;
+		}
+	};
 
 	try {
 		if (typeof mapkit === "undefined") {
+			if (mapkitRetryCount >= 100) {
+				console.error("Apple Maps init stopped: MapKit was not available after 100 attempts.");
+				return;
+			}
+
 			setTimeout(function() {
-				initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, pinColor, center);
+				initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, pinColor, center, mapkitRetryCount + 1);
 			}, 100);
 			return;
 		}
@@ -62,7 +84,7 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 				element.appendChild(description);
 
 				// Check if there is a link and create a clickable anchor tag
-				if (annotationData.link) {
+				if (annotationData.link && is_safe_http_url(annotationData.link)) {
 					const linkElement = document.createElement("a");
 					linkElement.href = annotationData.link;
 					linkElement.textContent = annotationData.link_text || "Visit Link";
@@ -92,7 +114,8 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 
 			mapLocations.forEach((location) => {
 				const { location_name, latitude, longitude, glyph, enable_callout, description, enable_link, link_url, link_text } = location;
-				const link_value = link_url && link_url.url ? link_url.url : null;
+				const raw_link_value = link_url && link_url.url ? link_url.url : null;
+				const link_value = is_safe_http_url(raw_link_value) ? raw_link_value : null;
 
 				const coord = new mapkit.Coordinate(parseFloat(latitude), parseFloat(longitude));
 				const annotationOptions = {

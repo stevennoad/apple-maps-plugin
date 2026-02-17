@@ -24,7 +24,7 @@ class Apple_Maps_Widget extends Widget_Base {
 		return [ 'general' ];
 	}
 
-	protected function _register_controls() {
+	protected function register_controls() {
 		$this->start_controls_section(
 			'locations',
 			[
@@ -470,16 +470,39 @@ class Apple_Maps_Widget extends Widget_Base {
 		if ( ! empty( $settings['location_input_mode'] ) ) {
 			$location_input_mode = $settings['location_input_mode'];
 
-			if ( $location_input_mode === 'standard' && ! empty( $settings['map_locations'] ) ) {
-				$locations = $settings['map_locations'];
-			} elseif ( $location_input_mode === 'place_id' && ! empty( $settings['map_locations_place_id'] ) ) {
-				$locations = $settings['map_locations_place_id'];
-			} else {
-				echo '<div style="color: red;">' . __( 'No locations provided for the selected mode.', 'apple-maps' ) . '</div>';
-				return;
-			}
+				if ( $location_input_mode === 'standard' && ! empty( $settings['map_locations'] ) ) {
+					$locations = $settings['map_locations'];
+				} elseif ( $location_input_mode === 'place_id' && ! empty( $settings['map_locations_place_id'] ) ) {
+					$locations = $settings['map_locations_place_id'];
+				} else {
+					echo '<div style="color: red;">' . __( 'No locations provided for the selected mode.', 'apple-maps' ) . '</div>';
+					return;
+				}
 
-			$color_scheme = ! empty( $settings['color_scheme'] ) ? esc_js( $settings['color_scheme'] ) : 'adaptive';
+				if ( $location_input_mode === 'standard' ) {
+					foreach ( $locations as &$location ) {
+						if ( empty( $location['link_url'] ) || ! is_array( $location['link_url'] ) || empty( $location['link_url']['url'] ) ) {
+							continue;
+						}
+
+						$sanitized_url = esc_url_raw( $location['link_url']['url'], [ 'http', 'https' ] );
+						if ( empty( $sanitized_url ) ) {
+							$location['link_url']['url'] = '';
+							continue;
+						}
+
+						$sanitized_scheme = wp_parse_url( $sanitized_url, PHP_URL_SCHEME );
+						if ( ! in_array( strtolower( (string) $sanitized_scheme ), [ 'http', 'https' ], true ) ) {
+							$location['link_url']['url'] = '';
+							continue;
+						}
+
+						$location['link_url']['url'] = $sanitized_url;
+					}
+					unset( $location );
+				}
+
+				$color_scheme = ! empty( $settings['color_scheme'] ) ? esc_js( $settings['color_scheme'] ) : 'adaptive';
 			$camera_distance = ! empty( $settings['camera_distance'] ) ? esc_js( $settings['camera_distance'] ) : 5000;
 			$zoom_enabled = ! empty( $settings['is_zoom_enabled'] ) && $settings['is_zoom_enabled'] === 'yes';
 			$scroll_enabled = ! empty( $settings['is_scroll_enabled'] ) && $settings['is_scroll_enabled'] === 'yes';
@@ -518,7 +541,7 @@ class Apple_Maps_Widget extends Widget_Base {
 			echo '</div>';
 
 			echo '<script>';
-			echo '(function waitForInitializeAppleMaps() {';
+			echo '(function waitForInitializeAppleMaps(attempt) {';
 			echo 'if (typeof initializeAppleMaps === "function") {';
 			echo 'const mapContainerId = "' . esc_js( $map_container_id ) . '";';
 			echo 'const locationInputMode = "' . esc_js( $location_input_mode ) . '";';
@@ -528,9 +551,9 @@ class Apple_Maps_Widget extends Widget_Base {
 			echo 'const pinColor = "' . esc_js( $pin_color ) . '";';
 			echo 'const colorScheme = "' . esc_js( $color_scheme ) . '";';
 
-			$cameraZoomRangeJs = $camera_zoom_range ? json_encode( $camera_zoom_range ) : 'undefined';
+			$camera_zoom_range_js = $camera_zoom_range ? wp_json_encode( $camera_zoom_range ) : 'undefined';
 
-			echo 'const cameraZoomRange = ' . $cameraZoomRangeJs . ';';
+			echo 'const cameraZoomRange = ' . $camera_zoom_range_js . ';';
 			$camera_boundary_js = $camera_boundary ? wp_json_encode( $camera_boundary ) : 'undefined';
 			echo 'const cameraBoundary = ' . $camera_boundary_js . ';';
 			echo 'const mapSettings = {';
@@ -543,10 +566,13 @@ class Apple_Maps_Widget extends Widget_Base {
 			echo 'const mapCenter = ' . $map_center_js . ';';
 			echo 'initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, pinColor, mapCenter);';
 			echo '} else {';
-			echo 'console.log("Waiting for initializeAppleMaps...");';
-			echo 'setTimeout(waitForInitializeAppleMaps, 100);';
+			echo 'if (attempt >= 100) {';
+			echo 'console.error("Apple Maps init stopped: initializeAppleMaps was not available after 100 attempts.");';
+			echo 'return;';
 			echo '}';
-			echo '})();';
+			echo 'setTimeout(function() { waitForInitializeAppleMaps(attempt + 1); }, 100);';
+			echo '}';
+			echo '})(0);';
 			echo '</script>';
 		}
 	}
