@@ -34,7 +34,7 @@ add_action( 'elementor/frontend/after_enqueue_scripts', function() {
 		'apple-maps-script',
 		plugins_url( 'assets/js/apple-maps.js', __FILE__ ),
 		[ 'jquery', 'elementor-frontend', 'mapkit-js' ],
-		'1.0.0',
+		filemtime( __DIR__ . '/assets/js/apple-maps.js' ),
 		true
 	);
 

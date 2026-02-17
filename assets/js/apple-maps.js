@@ -61,33 +61,33 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 		annotations = [];
 
 		// Define the custom callout delegate at the top level
-		const calloutDelegate = {
-			calloutContentForAnnotation: function(annotation) {
-				const element = document.createElement("div");
-				element.className = "custom-callout-content";
-				element.style.padding = "10px";
+			const calloutDelegate = {
+				calloutContentForAnnotation: function(annotation) {
+					const element = document.createElement("div");
+					element.className = "custom-callout-content";
+					element.style.padding = "10px";
 
 				const title = document.createElement("h4");
 				title.textContent = annotation.title;
 				title.style.margin = "0";
-				title.style.fontSize = "16px";
-				title.style.color = "#333";
-				element.appendChild(title);
+					title.style.fontSize = "16px";
+					title.style.color = "#333";
+					element.appendChild(title);
 
-				// Create the description element with inline styles
-				const description = document.createElement("p");
-				const annotationData = annotation && annotation.data ? annotation.data : {};
-				description.textContent = annotationData.description || "No additional information.";
-				description.style.margin = "5px 0 0";
-				description.style.fontSize = "14px";
-				description.style.color = "#555";
-				element.appendChild(description);
+					const annotationData = annotation && annotation.data ? annotation.data : {};
 
-				// Check if there is a link and create a clickable anchor tag
-				if (annotationData.link && is_safe_http_url(annotationData.link)) {
-					const linkElement = document.createElement("a");
-					linkElement.href = annotationData.link;
-					linkElement.textContent = annotationData.link_text || "Visit Link";
+					const description = document.createElement("p");
+					description.textContent = annotationData.description || "No additional information.";
+					description.style.margin = "5px 0 0";
+					description.style.fontSize = "14px";
+					description.style.color = "#555";
+					element.appendChild(description);
+
+					// Check if there is a link and create a clickable anchor tag
+					if (annotationData.link && is_safe_http_url(annotationData.link)) {
+						const linkElement = document.createElement("a");
+						linkElement.href = annotationData.link;
+						linkElement.textContent = annotationData.link_text || "Visit Link";
 					linkElement.style.display = "block";
 					linkElement.style.marginTop = "10px";
 					linkElement.style.fontSize = "14px";
@@ -98,16 +98,25 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 					linkElement.addEventListener('mouseover', function() {
 						linkElement.style.textDecoration = "underline";
 					});
-					linkElement.addEventListener('mouseout', function() {
-						linkElement.style.textDecoration = "none";
-					});
+						linkElement.addEventListener('mouseout', function() {
+							linkElement.style.textDecoration = "none";
+						});
 
-					element.appendChild(linkElement);
+						element.appendChild(linkElement);
+					}
+
+					if (element.children.length === 1) {
+						const emptyMessage = document.createElement("p");
+						emptyMessage.textContent = "No additional information.";
+						emptyMessage.style.margin = "5px 0 0";
+						emptyMessage.style.fontSize = "14px";
+						emptyMessage.style.color = "#555";
+						element.appendChild(emptyMessage);
+					}
+
+					return element;
 				}
-
-				return element;
-			}
-		};
+			};
 
 		if (locationInputMode === "standard") {
 			let totalLat = 0, totalLng = 0;
@@ -170,11 +179,11 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 
 				map.region = region;
 			}
-		} else if (locationInputMode === "place_id") {
-			const placeLookup = new mapkit.PlaceLookup();
+			} else if (locationInputMode === "place_id") {
+				const placeLookup = new mapkit.PlaceLookup();
 
-			Promise.all(
-				mapLocations.map(location =>
+				Promise.all(
+					mapLocations.map(location =>
 					new Promise(resolve => {
 						const { place_id } = location;
 						if (!place_id) {
@@ -186,17 +195,23 @@ function initializeAppleMaps(mapContainerId, locationInputMode, mapLocations, ma
 						placeLookup.getPlace(place_id, (error, place) => {
 							if (error) {
 								resolve(null);
-							} else if (place) {
-								const annotation = new mapkit.PlaceAnnotation(place);
-								annotation.callout = calloutDelegate; // Attach callout delegate
+								return;
+							}
 
-								map.addAnnotation(annotation);
-								annotations.push(annotation);
-								resolve(annotation);
-							} else {
+							if (!place) {
 								console.warn(`No place found for Place ID: ${place_id}`);
 								resolve(null);
+								return;
 							}
+
+								const annotation = new mapkit.PlaceAnnotation(place);
+								if (typeof mapkit.PlaceSelectionAccessory === "function") {
+									annotation.selectionAccessory = new mapkit.PlaceSelectionAccessory();
+								}
+
+								map.addAnnotation(annotation);
+							annotations.push(annotation);
+							resolve(annotation);
 						});
 					})
 				)
