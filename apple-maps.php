@@ -82,7 +82,13 @@ add_action( 'admin_init', 'apple_maps_register_settings' );
 
 function apple_maps_register_settings() {
 	// Register a setting and create a settings group
-	register_setting( 'apple_maps_settings_group', 'apple_maps_mapkit_token' );
+	register_setting(
+		'apple_maps_settings_group',
+		'apple_maps_mapkit_token',
+		[
+			'sanitize_callback' => 'apple_maps_sanitize_mapkit_token',
+		]
+	);
 
 	// Optionally add settings sections and fields here
 	add_settings_section(
@@ -100,6 +106,17 @@ function apple_maps_register_settings() {
 		'apple_maps_settings',
 		'apple_maps_general_settings'
 	);
+}
+
+function apple_maps_sanitize_mapkit_token( $mapkit_token ) {
+	if ( ! is_string( $mapkit_token ) ) {
+		return '';
+	}
+
+	$mapkit_token = wp_strip_all_tags( $mapkit_token );
+	$mapkit_token = preg_replace( '/\s+/', '', $mapkit_token );
+
+	return $mapkit_token;
 }
 
 // Callback function for the MapKit Token field
