@@ -279,7 +279,7 @@ $this->start_controls_section(
 			]
 		);
 
-		
+
 
 // Enable Points of Interest Toggle
 		$this->add_control(
@@ -426,7 +426,7 @@ $this->start_controls_section(
 
 		$this->end_controls_section();
 
-		
+
 
 		$this->start_controls_section(
 			'pin_styles',
