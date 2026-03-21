@@ -284,13 +284,27 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 						const override_title = location && location.place_name_override ? String(location.place_name_override).trim() : "";
 						const title = override_title || place.name || place_id;
 
+						const use_custom_callout = location.enable_callout === "yes";
+
+						const raw_link_value = location.link_url && location.link_url.url ? location.link_url.url : null;
+						const link_value = is_safe_http_url(raw_link_value) ? raw_link_value : null;
+
 					const annotation_options = {
 							title: title,
 						glyphText: glyph_text,
 						color: parse_color_to_mapkit(pin_color),
 							animates: true,
 							place: place,
+							data: {
+								description: use_custom_callout ? location.description : null,
+								link: use_custom_callout && location.enable_link === "yes" ? link_value : null,
+								link_text: use_custom_callout && location.enable_link === "yes" ? location.link_text : null,
+							},
 						};
+
+						if (use_custom_callout) {
+							annotation_options.callout = callout_delegate;
+						}
 
 						if (is_safe_http_url(icon_url)) {
 							annotation_options.glyphImage = { 1: icon_url };
@@ -298,7 +312,9 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 
 						const coordinate = new mapkit.Coordinate(place.coordinate.latitude, place.coordinate.longitude);
 						const annotation = new mapkit.MarkerAnnotation(coordinate, annotation_options);
-						if (typeof mapkit.PlaceSelectionAccessory === "function") {
+
+						// Only attach the native place card when no custom callout is set
+						if (!use_custom_callout && typeof mapkit.PlaceSelectionAccessory === "function") {
 							annotation.selectionAccessory = new mapkit.PlaceSelectionAccessory();
 						}
 
