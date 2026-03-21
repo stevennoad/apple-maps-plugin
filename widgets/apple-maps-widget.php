@@ -765,7 +765,7 @@ $this->add_control(
 		}
 		unset( $location );
 
-		$color_scheme = ! empty( $settings['color_scheme'] ) ? esc_js( $settings['color_scheme'] ) : 'adaptive';
+		$color_scheme = in_array( $settings['color_scheme'] ?? '', [ 'adaptive', 'dark', 'light' ], true ) ? $settings['color_scheme'] : 'adaptive';
 		$camera_distance = ! empty( $settings['camera_distance'] ) ? esc_js( $settings['camera_distance'] ) : 5000;
 		$zoom_enabled = ! empty( $settings['is_zoom_enabled'] ) && $settings['is_zoom_enabled'] === 'yes';
 		$scroll_enabled = ! empty( $settings['is_scroll_enabled'] ) && $settings['is_scroll_enabled'] === 'yes';
@@ -811,18 +811,18 @@ $camera_zoom_range = null;
 		$camera_boundary = null;
 		if ( ! empty( $settings['enable_camera_boundary'] ) && $settings['enable_camera_boundary'] === 'yes' ) {
 			$camera_boundary = [
-				'latitude' => ! empty( $settings['camera_boundary_latitude'] ) ? $settings['camera_boundary_latitude'] : 37.0,
-				'longitude' => ! empty( $settings['camera_boundary_longitude'] ) ? $settings['camera_boundary_longitude'] : -123.0,
-				'span_latitude' => ! empty( $settings['camera_boundary_span_latitude'] ) ? $settings['camera_boundary_span_latitude'] : 1.0,
-				'span_longitude' => ! empty( $settings['camera_boundary_span_longitude'] ) ? $settings['camera_boundary_span_longitude'] : 1.0,
+				'latitude'       => floatval( $settings['camera_boundary_latitude'] ?? 37.0 ),
+				'longitude'      => floatval( $settings['camera_boundary_longitude'] ?? -123.0 ),
+				'span_latitude'  => floatval( $settings['camera_boundary_span_latitude'] ?? 1.0 ),
+				'span_longitude' => floatval( $settings['camera_boundary_span_longitude'] ?? 1.0 ),
 			];
 		}
 
 		$map_center = null;
 		if ( ! empty( $settings['enable_map_center'] ) && $settings['enable_map_center'] === 'yes' ) {
 			$map_center = [
-				'latitude'  => ! empty( $settings['map_center_latitude'] ) ? $settings['map_center_latitude'] : null,
-				'longitude' => ! empty( $settings['map_center_longitude'] ) ? $settings['map_center_longitude'] : null,
+				'latitude'  => floatval( $settings['map_center_latitude'] ?? 0 ),
+				'longitude' => floatval( $settings['map_center_longitude'] ?? 0 ),
 			];
 		}
 
