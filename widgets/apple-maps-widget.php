@@ -150,7 +150,7 @@ class Apple_Maps_Widget extends Widget_Base {
 					],
 					[
 						'name'        => 'enable_callout',
-						'label'       => __( 'Enable Callout', 'apple-maps' ),
+						'label'       => __( 'Override PlaceDetails', 'apple-maps' ),
 						'type'        => Controls_Manager::SWITCHER,
 						'label_on'    => __( 'Yes', 'apple-maps' ),
 						'label_off'   => __( 'No', 'apple-maps' ),
@@ -591,6 +591,96 @@ $this->add_control(
 		);
 
 		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'callout_style',
+			[
+				'label' => __( 'Callout Style', 'apple-maps' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'callout_bg_color',
+			[
+				'label'   => __( 'Background Color', 'apple-maps' ),
+				'type'    => Controls_Manager::COLOR,
+				'default' => '#ffffff',
+			]
+		);
+
+		$this->add_control(
+			'callout_title_color',
+			[
+				'label'   => __( 'Title Color', 'apple-maps' ),
+				'type'    => Controls_Manager::COLOR,
+				'default' => '#333333',
+			]
+		);
+
+		$this->add_control(
+			'callout_title_size',
+			[
+				'label'      => __( 'Title Font Size (px)', 'apple-maps' ),
+				'type'       => Controls_Manager::NUMBER,
+				'default'    => 16,
+				'min'        => 10,
+				'max'        => 48,
+			]
+		);
+
+		$this->add_control(
+			'callout_text_color',
+			[
+				'label'   => __( 'Text Color', 'apple-maps' ),
+				'type'    => Controls_Manager::COLOR,
+				'default' => '#555555',
+			]
+		);
+
+		$this->add_control(
+			'callout_text_size',
+			[
+				'label'   => __( 'Text Font Size (px)', 'apple-maps' ),
+				'type'    => Controls_Manager::NUMBER,
+				'default' => 14,
+				'min'     => 10,
+				'max'     => 48,
+			]
+		);
+
+		$this->add_control(
+			'callout_link_color',
+			[
+				'label'   => __( 'Link Color', 'apple-maps' ),
+				'type'    => Controls_Manager::COLOR,
+				'default' => '#0066cc',
+			]
+		);
+
+		$this->add_control(
+			'callout_padding',
+			[
+				'label'   => __( 'Padding (px)', 'apple-maps' ),
+				'type'    => Controls_Manager::NUMBER,
+				'default' => 10,
+				'min'     => 0,
+				'max'     => 40,
+			]
+		);
+
+		$this->add_control(
+			'callout_border_radius',
+			[
+				'label'   => __( 'Border Radius (px)', 'apple-maps' ),
+				'type'    => Controls_Manager::NUMBER,
+				'default' => 6,
+				'min'     => 0,
+				'max'     => 40,
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	protected function render() {
@@ -638,7 +728,8 @@ $this->add_control(
 
 			$location['enable_callout'] = ( ! empty( $location['enable_callout'] ) && $location['enable_callout'] === 'yes' ) ? 'yes' : 'no';
 			$location['enable_link'] = ( ! empty( $location['enable_link'] ) && $location['enable_link'] === 'yes' ) ? 'yes' : 'no';
-			$location['description'] = ! empty( $location['description'] ) ? sanitize_textarea_field( $location['description'] ) : '';
+			$allowed_html = [ 'br' => [], 'strong' => [], 'em' => [], 'b' => [], 'i' => [], 'a' => [ 'href' => [], 'target' => [], 'rel' => [] ], 'span' => [ 'style' => [] ], 'p' => [] ];
+			$location['description'] = ! empty( $location['description'] ) ? wp_kses( $location['description'], $allowed_html ) : '';
 			$location['link_text'] = ! empty( $location['link_text'] ) ? sanitize_text_field( $location['link_text'] ) : '';
 
 			// Default to an empty URL unless a safe HTTP(S) URL is provided.
@@ -727,6 +818,18 @@ $camera_zoom_range = null;
 		$map_center_js = $map_center ? wp_json_encode( $map_center ) : 'undefined';
 		$camera_zoom_range_js = $camera_zoom_range ? wp_json_encode( $camera_zoom_range ) : 'undefined';
 		$camera_boundary_js = $camera_boundary ? wp_json_encode( $camera_boundary ) : 'undefined';
+
+		$callout_styles = [
+			'bg_color'      => ! empty( $settings['callout_bg_color'] ) ? sanitize_hex_color( $settings['callout_bg_color'] ) : '#ffffff',
+			'title_color'   => ! empty( $settings['callout_title_color'] ) ? sanitize_hex_color( $settings['callout_title_color'] ) : '#333333',
+			'title_size'    => ! empty( $settings['callout_title_size'] ) ? (int) $settings['callout_title_size'] : 16,
+			'text_color'    => ! empty( $settings['callout_text_color'] ) ? sanitize_hex_color( $settings['callout_text_color'] ) : '#555555',
+			'text_size'     => ! empty( $settings['callout_text_size'] ) ? (int) $settings['callout_text_size'] : 14,
+			'link_color'    => ! empty( $settings['callout_link_color'] ) ? sanitize_hex_color( $settings['callout_link_color'] ) : '#0066cc',
+			'padding'       => ! empty( $settings['callout_padding'] ) ? (int) $settings['callout_padding'] : 10,
+			'border_radius' => ! empty( $settings['callout_border_radius'] ) ? (int) $settings['callout_border_radius'] : 6,
+		];
+
 		$map_container_id = 'apple-maps-widget-' . $this->get_id();
 		echo '<div class="apple-maps-container" style="overflow: hidden;">';
 		echo '<div id="' . esc_attr( $map_container_id ) . '" class="apple-maps-widget" style="width: 100%; min-height: 400px;"></div>';
@@ -751,13 +854,14 @@ $camera_zoom_range = null;
 		echo 'const defaultPinText = "' . esc_js( $default_pin_text ) . '";';
 		echo 'const defaultPinColor = "' . esc_js( $default_pin_color ) . '";';
 		echo 'const defaultPinIconUrl = "' . esc_js( $default_pin_icon_url ) . '";';
+		echo 'const calloutStyles = ' . wp_json_encode( $callout_styles ) . ';';
 		echo 'const mapSettings = {';
 		echo 'isZoomEnabled: ' . ( $zoom_enabled ? 'true' : 'false' ) . ',';
 		echo 'isScrollEnabled: ' . ( $scroll_enabled ? 'true' : 'false' ) . ',';
 		echo 'isRotationEnabled: ' . ( $rotation_enabled ? 'true' : 'false' ) . ',';
 		echo 'showPOIs: ' . ( $pois_enabled ? 'true' : 'false' );
 		echo '};';
-		echo 'initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, mapCenter, defaultPinStyleType, defaultPinText, defaultPinColor, defaultPinIconUrl);';
+		echo 'initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, mapCenter, defaultPinStyleType, defaultPinText, defaultPinColor, defaultPinIconUrl, calloutStyles);';
 		echo '})(0);';
 		echo '</script>';
 	}

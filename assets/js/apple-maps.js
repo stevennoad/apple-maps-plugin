@@ -119,7 +119,7 @@ function parse_color_to_mapkit(color) {
 	return color;
 }
 
-function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDistance, colorScheme = "adaptive", mapSettings = {}, cameraZoomRange = undefined, cameraBoundary = undefined, center = undefined, defaultPinStyleType = "icon", defaultPinText = "", defaultPinColor = "#ff0000", defaultPinIconUrl = "") {
+function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDistance, colorScheme = "adaptive", mapSettings = {}, cameraZoomRange = undefined, cameraBoundary = undefined, center = undefined, defaultPinStyleType = "icon", defaultPinText = "", defaultPinColor = "#ff0000", defaultPinIconUrl = "", calloutStyles = {}) {
 	if (!mapKitToken || !mapLocations || mapLocations.length === 0) {
 		console.error("Missing MapKit token or map locations.");
 		return Promise.resolve(null);
@@ -192,24 +192,38 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 
 		const callout_delegate = {
 			calloutContentForAnnotation: function(annotation) {
+				const styles = calloutStyles || {};
+				const bg_color      = styles.bg_color      || "#ffffff";
+				const title_color   = styles.title_color   || "#333333";
+				const title_size    = styles.title_size     || 16;
+				const text_color    = styles.text_color    || "#555555";
+				const text_size     = styles.text_size     || 14;
+				const link_color    = styles.link_color    || "#0066cc";
+				const padding       = styles.padding       || 10;
+				const border_radius = styles.border_radius || 6;
+
 				const element = document.createElement("div");
 				element.className = "custom-callout-content";
-				element.style.padding = "10px";
+				element.style.padding = padding + "px";
+				element.style.backgroundColor = bg_color;
+				element.style.borderRadius = border_radius + "px";
 
 				const title = document.createElement("h4");
 				title.textContent = annotation.title;
 				title.style.margin = "0";
-				title.style.fontSize = "16px";
-				title.style.color = "#333";
+				title.style.fontSize = title_size + "px";
+				title.style.color = title_color;
 				element.appendChild(title);
 
 				const annotation_data = annotation && annotation.data ? annotation.data : {};
-				const description = document.createElement("p");
-				description.textContent = annotation_data.description || "No additional information.";
-				description.style.margin = "5px 0 0";
-				description.style.fontSize = "14px";
-				description.style.color = "#555";
-				element.appendChild(description);
+				if (annotation_data.description) {
+					const description = document.createElement("div");
+					description.innerHTML = annotation_data.description;
+					description.style.margin = "5px 0 0";
+					description.style.fontSize = text_size + "px";
+					description.style.color = text_color;
+					element.appendChild(description);
+				}
 
 				if (annotation_data.link && is_safe_http_url(annotation_data.link)) {
 					const link_element = document.createElement("a");
@@ -217,8 +231,8 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 					link_element.textContent = annotation_data.link_text || "Visit Link";
 					link_element.style.display = "block";
 					link_element.style.marginTop = "10px";
-					link_element.style.fontSize = "14px";
-					link_element.style.color = "#0066cc";
+					link_element.style.fontSize = text_size + "px";
+					link_element.style.color = link_color;
 					link_element.style.textDecoration = "none";
 					link_element.addEventListener("mouseover", function() {
 						link_element.style.textDecoration = "underline";
