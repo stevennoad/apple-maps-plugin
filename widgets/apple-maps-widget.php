@@ -728,8 +728,19 @@ $this->add_control(
 
 			$location['enable_callout'] = ( ! empty( $location['enable_callout'] ) && $location['enable_callout'] === 'yes' ) ? 'yes' : 'no';
 			$location['enable_link'] = ( ! empty( $location['enable_link'] ) && $location['enable_link'] === 'yes' ) ? 'yes' : 'no';
-			$allowed_html = [ 'br' => [], 'strong' => [], 'em' => [], 'b' => [], 'i' => [], 'a' => [ 'href' => [], 'target' => [], 'rel' => [] ], 'span' => [ 'style' => [] ], 'p' => [] ];
-			$location['description'] = ! empty( $location['description'] ) ? wp_kses( $location['description'], $allowed_html ) : '';
+			$allowed_html = [
+				'br'     => [],
+				'strong' => [],
+				'em'     => [],
+				'b'      => [],
+				'i'      => [],
+				'p'      => [],
+				// href is restricted to http/https only to block javascript: URLs
+				'a'      => [ 'href' => [], 'target' => [], 'rel' => [] ],
+			];
+			$description_raw = ! empty( $location['description'] ) ? wp_kses( $location['description'], $allowed_html ) : '';
+			// Strip any javascript: or data: URIs that wp_kses may not catch in href
+			$location['description'] = preg_replace( '/href\s*=\s*["\'\s]*(javascript|data):/i', 'href="#"', $description_raw );
 			$location['link_text'] = ! empty( $location['link_text'] ) ? sanitize_text_field( $location['link_text'] ) : '';
 
 			// Default to an empty URL unless a safe HTTP(S) URL is provided.
