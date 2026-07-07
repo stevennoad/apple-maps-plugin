@@ -143,6 +143,37 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 
 		let all_annotations = [];
 
+		const get_auto_fit_zoom_out_multiplier = function() {
+			const zoom_out_amount = parseFloat(mapSettings.autoFitZoomOut);
+			if (isNaN(zoom_out_amount) || zoom_out_amount <= 0) {
+				return 1;
+			}
+
+			return 1 + Math.min(zoom_out_amount, 300) / 100;
+		};
+
+		const apply_auto_fit_zoom_out = function(multiplier) {
+			if (multiplier <= 1) {
+				return;
+			}
+
+			const current_region = map.region;
+			if (!current_region || !current_region.center || !current_region.span) {
+				return;
+			}
+
+			const latitude_delta = parseFloat(current_region.span.latitudeDelta);
+			const longitude_delta = parseFloat(current_region.span.longitudeDelta);
+			if (isNaN(latitude_delta) || isNaN(longitude_delta) || latitude_delta <= 0 || longitude_delta <= 0) {
+				return;
+			}
+
+			map.region = new mapkit.CoordinateRegion(
+				current_region.center,
+				new mapkit.CoordinateSpan(latitude_delta * multiplier, longitude_delta * multiplier)
+			);
+		};
+
 		const apply_camera_boundary = function() {
 			const has_camera_boundary = cameraBoundary && typeof cameraBoundary === "object" && !Array.isArray(cameraBoundary) && Object.keys(cameraBoundary).length > 0;
 			if (!has_camera_boundary) {
@@ -177,7 +208,16 @@ function initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDi
 			}
 
 			if (annotations.length > 1) {
-				map.showItems(annotations);
+				const zoom_out_multiplier = get_auto_fit_zoom_out_multiplier();
+				if (zoom_out_multiplier <= 1) {
+					map.showItems(annotations);
+					return;
+				}
+
+				map.showItems(annotations, { animate: false });
+				window.setTimeout(function() {
+					apply_auto_fit_zoom_out(zoom_out_multiplier);
+				}, 0);
 				return;
 			}
 

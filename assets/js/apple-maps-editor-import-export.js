@@ -6,6 +6,7 @@
 		'map_locations',
 		'color_scheme',
 		'camera_distance',
+		'auto_fit_zoom_out',
 		'is_zoom_enabled',
 		'is_scroll_enabled',
 		'is_rotation_enabled',

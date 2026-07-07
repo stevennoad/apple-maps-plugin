@@ -237,6 +237,29 @@ $this->start_controls_section(
 				'label'       => __( 'Camera Distance', 'apple-maps' ),
 				'type'        => Controls_Manager::NUMBER,
 				'default'     => 1000,
+				'description' => __( 'Used when the map has one location, or when custom map center is enabled. Multiple pins use auto-fit.', 'apple-maps' ),
+			]
+		);
+
+		// autoFitZoomOut setting
+		$this->add_control(
+			'auto_fit_zoom_out',
+			[
+				'label'       => __( 'Auto-fit Zoom Out', 'apple-maps' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => [ '%' ],
+				'range'       => [
+					'%' => [
+						'min'  => 0,
+						'max'  => 300,
+						'step' => 5,
+					],
+				],
+				'default'     => [
+					'unit' => '%',
+					'size' => 0,
+				],
+				'description' => __( 'Increase this to show more area around all pins after auto-fit.', 'apple-maps' ),
 			]
 		);
 
@@ -771,6 +794,14 @@ $this->add_control(
 
 		$color_scheme = in_array( $settings['color_scheme'] ?? '', [ 'adaptive', 'dark', 'light' ], true ) ? $settings['color_scheme'] : 'adaptive';
 		$camera_distance = ! empty( $settings['camera_distance'] ) ? esc_js( $settings['camera_distance'] ) : 5000;
+		$auto_fit_zoom_out = 0;
+		if ( isset( $settings['auto_fit_zoom_out'] ) && is_numeric( $settings['auto_fit_zoom_out'] ) ) {
+			$auto_fit_zoom_out = (float) $settings['auto_fit_zoom_out'];
+		}
+		if ( ! empty( $settings['auto_fit_zoom_out'] ) && is_array( $settings['auto_fit_zoom_out'] ) && isset( $settings['auto_fit_zoom_out']['size'] ) && is_numeric( $settings['auto_fit_zoom_out']['size'] ) ) {
+			$auto_fit_zoom_out = (float) $settings['auto_fit_zoom_out']['size'];
+		}
+		$auto_fit_zoom_out = max( 0, min( 300, $auto_fit_zoom_out ) );
 		$zoom_enabled = ! empty( $settings['is_zoom_enabled'] ) && $settings['is_zoom_enabled'] === 'yes';
 		$scroll_enabled = ! empty( $settings['is_scroll_enabled'] ) && $settings['is_scroll_enabled'] === 'yes';
 		$rotation_enabled = ! empty( $settings['is_rotation_enabled'] ) && $settings['is_rotation_enabled'] === 'yes';
@@ -893,7 +924,8 @@ $camera_zoom_range = null;
 		echo 'isZoomEnabled: ' . ( $zoom_enabled ? 'true' : 'false' ) . ',';
 		echo 'isScrollEnabled: ' . ( $scroll_enabled ? 'true' : 'false' ) . ',';
 		echo 'isRotationEnabled: ' . ( $rotation_enabled ? 'true' : 'false' ) . ',';
-		echo 'showPOIs: ' . ( $pois_enabled ? 'true' : 'false' );
+		echo 'showPOIs: ' . ( $pois_enabled ? 'true' : 'false' ) . ',';
+		echo 'autoFitZoomOut: ' . esc_js( $auto_fit_zoom_out );
 		echo '};';
 		echo 'initializeAppleMaps(mapContainerId, mapLocations, mapKitToken, cameraDistance, colorScheme, mapSettings, cameraZoomRange, cameraBoundary, mapCenter, defaultPinStyleType, defaultPinText, defaultPinColor, defaultPinIconUrl, calloutStyles);';
 		echo '})(0);';
