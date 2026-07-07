@@ -3,7 +3,7 @@
 Plugin Name: Apple Maps for Elementor
 Plugin URI:  https://github.com/stevennoad/apple-maps-plugin
 Description: A plugin to add Apple Maps with multiple locations as an Elementor widget.
-Version:     3.0.1
+Version:     3.0.2
 Author:      Steve Noad
 License:     MIT
 Text Domain: apple-maps
