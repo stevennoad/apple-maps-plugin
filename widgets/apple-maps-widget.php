@@ -567,7 +567,7 @@ $this->add_control(
 			'map_border_radius',
 			[
 				'label' => __( 'Map Border Radius', 'apple-maps' ),
-				'type' => Controls_Manager::SLIDER,
+				'type' => Controls_Manager::DIMENSIONS,
 				'size_units' => [ 'px', '%' ],
 				'range' => [
 					'px' => [
@@ -581,11 +581,15 @@ $this->add_control(
 					],
 				],
 				'selectors' => [
-					'{{WRAPPER}} .apple-maps-container' => 'border-radius: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .apple-maps-container' => '--apple-maps-border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
 				'default' => [
 					'unit' => 'px',
-					'size' => 10,
+					'top' => 10,
+					'right' => 10,
+					'bottom' => 10,
+					'left' => 10,
+					'isLinked' => true,
 				],
 			]
 		);
@@ -841,8 +845,27 @@ $camera_zoom_range = null;
 			'border_radius' => ! empty( $settings['callout_border_radius'] ) ? (int) $settings['callout_border_radius'] : 6,
 		];
 
+		$map_border_radius_css = '10px';
+		$map_border_radius = ! empty( $settings['map_border_radius'] ) && is_array( $settings['map_border_radius'] ) ? $settings['map_border_radius'] : [];
+		$map_border_radius_unit = ! empty( $map_border_radius['unit'] ) && in_array( $map_border_radius['unit'], [ 'px', '%' ], true ) ? $map_border_radius['unit'] : 'px';
+
+		if ( isset( $map_border_radius['size'] ) && $map_border_radius['size'] !== '' ) {
+			$map_border_radius_css = (float) $map_border_radius['size'] . $map_border_radius_unit;
+		}
+
+		$map_border_radius_sides = [];
+		foreach ( [ 'top', 'right', 'bottom', 'left' ] as $map_border_radius_side ) {
+			if ( ! isset( $map_border_radius[ $map_border_radius_side ] ) || $map_border_radius[ $map_border_radius_side ] === '' ) {
+				continue;
+			}
+			$map_border_radius_sides[] = (float) $map_border_radius[ $map_border_radius_side ] . $map_border_radius_unit;
+		}
+		if ( count( $map_border_radius_sides ) === 4 ) {
+			$map_border_radius_css = implode( ' ', $map_border_radius_sides );
+		}
+
 		$map_container_id = 'apple-maps-widget-' . $this->get_id();
-		echo '<div class="apple-maps-container" style="overflow: hidden;">';
+		echo '<div class="apple-maps-container" style="overflow: hidden; border-radius: var(--apple-maps-border-radius, ' . esc_attr( $map_border_radius_css ) . ');">';
 		echo '<div id="' . esc_attr( $map_container_id ) . '" class="apple-maps-widget" style="width: 100%; min-height: 400px;"></div>';
 		echo '</div>';
 

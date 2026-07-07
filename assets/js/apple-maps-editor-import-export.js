@@ -67,6 +67,27 @@
 		return Math.random().toString(16).slice(2, 9);
 	}
 
+	function normalize_map_border_radius_value(value) {
+		if (!value || typeof value !== 'object' || Array.isArray(value)) {
+			return value;
+		}
+		if (typeof value.top !== 'undefined' || typeof value.right !== 'undefined' || typeof value.bottom !== 'undefined' || typeof value.left !== 'undefined') {
+			return value;
+		}
+		if (typeof value.size === 'undefined' || value.size === '') {
+			return value;
+		}
+
+		return {
+			unit: value.unit || 'px',
+			top: value.size,
+			right: value.size,
+			bottom: value.size,
+			left: value.size,
+			isLinked: true
+		};
+	}
+
 	function filter_location_item(item) {
 		if (!item || typeof item !== 'object') {
 			return null;
@@ -140,6 +161,11 @@
 					}
 				});
 				filtered[key] = locs;
+				return;
+			}
+
+			if (key.indexOf('map_border_radius') === 0) {
+				filtered[key] = normalize_map_border_radius_value(payload[key]);
 				return;
 			}
 
